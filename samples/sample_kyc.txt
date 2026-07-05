@@ -1,0 +1,15 @@
+KNOW YOUR CUSTOMER (KYC) FORM
+================================
+
+Full Name: Rahul Sharma
+Date of Birth: 1998-05-12
+PAN: ABCDE1234F
+Aadhaar Number: 1234 5678 9012 4821
+Phone: +91 9876543210
+
+Address:
+House No. 42, Sector 14
+Gurugram, Haryana - 122001
+
+Document Type: KYC
+Submitted Date: 2026-01-15
