@@ -1,0 +1,16 @@
+[Unit]
+Description=DocStruct KYC Document Intelligence
+After=network.target
+
+[Service]
+Type=simple
+User=docstruct
+Group=docstruct
+WorkingDirectory=/opt/docstruct
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/docstruct/venv/bin/python -m streamlit run app.py --server.address 0.0.0.0 --server.port 8501 --server.headless true --browser.gatherUsageStats false
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
