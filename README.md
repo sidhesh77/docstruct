@@ -1,6 +1,10 @@
 # DocStruct — AI-Powered KYC Document Intelligence
 
+[![Deploy on Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=sidhesh77/docstruct&branch=main&mainModule=app.py)
+
 A full-stack document intelligence platform that extracts, structures, and validates KYC data from PDFs using AI — built for enterprise automation workflows.
+
+**Live demo:** Sign in with `demo` / `demo123`
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.41-red)
