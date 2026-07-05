@@ -14,12 +14,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Streamlit Cloud / hosted deploy: load secrets into env
-try:
-    if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+st.set_page_config(
+    page_title="DocStruct | Document Intelligence",
+    page_icon="📄",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Streamlit Cloud secrets (optional — use .env locally via cp .env.example .env)
+_secrets_file = os.path.join(os.path.dirname(__file__), ".streamlit", "secrets.toml")
+if os.path.isfile(_secrets_file) and not os.getenv("GEMINI_API_KEY"):
+    try:
         os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
-except Exception:
-    pass
+    except (KeyError, FileNotFoundError):
+        pass
 
 from auth import authenticate, get_user_stats, init_db, register_user, save_extraction
 from extract_json import extract_kyc_data
@@ -27,15 +35,7 @@ from extract_text import extract_text_from_pdf, extract_text_from_txt
 from ui_styles import inject_styles, render_hero, render_stat_card
 from validate_data import check_all_fields
 
-# ----- Init -----
 init_db()
-
-st.set_page_config(
-    page_title="DocStruct | Document Intelligence",
-    page_icon="📄",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
 
 inject_styles()
 
@@ -45,6 +45,7 @@ defaults = {
     "user": None,
     "used_sample": False,
     "page": "extract",
+    "show_auth": False,
 }
 for key, value in defaults.items():
     if key not in st.session_state:
@@ -59,12 +60,132 @@ def logout() -> None:
     st.rerun()
 
 
+def show_landing_page() -> None:
+    st.markdown(
+        """
+        <div class="landing-nav">
+            <div class="landing-logo">📄 Doc<span>Struct</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    _, nav_btn, _ = st.columns([5, 1.2, 5])
+    with nav_btn:
+        if st.button("Sign In", use_container_width=True):
+            st.session_state.show_auth = True
+            st.rerun()
+
+    st.markdown(
+        """
+        <div class="landing-hero">
+            <div class="tag">AI · DOCUMENT INTELLIGENCE · KYC AUTOMATION</div>
+            <h1>Turn messy KYC forms into clean, validated JSON</h1>
+            <p class="subtitle">
+                DocStruct is an AI-powered document intelligence platform that reads KYC
+                documents, extracts structured data with Gemini AI, validates every field
+                against compliance rules, and exports ready-to-use JSON — in seconds, not hours.
+            </p>
+        </div>
+        <div class="landing-stats">
+            <div class="landing-stat"><div class="num">3-step</div><div class="lbl">Pipeline</div></div>
+            <div class="landing-stat"><div class="num">7+</div><div class="lbl">KYC Fields</div></div>
+            <div class="landing-stat"><div class="num">AI</div><div class="lbl">Powered</div></div>
+            <div class="landing-stat"><div class="num">100%</div><div class="lbl">Validated</div></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    c1, c2, c3 = st.columns([1, 1.2, 1])
+    with c2:
+        if st.button("Get Started Free →", type="primary", use_container_width=True):
+            st.session_state.show_auth = True
+            st.rerun()
+        st.caption("No credit card · Demo account ready · Works instantly")
+
+    st.markdown('<p class="section-title">Why DocStruct?</p><p class="section-sub">Built for banks, fintech, and enterprise teams drowning in manual KYC data entry</p>', unsafe_allow_html=True)
+
+    f1, f2, f3 = st.columns(3)
+    features = [
+        (f1, "🤖", "Gemini AI Extraction", "Google Gemini 2.0 Flash reads unstructured KYC text and returns perfectly structured JSON — name, PAN, Aadhaar, phone, and more."),
+        (f2, "✅", "Smart Validation", "Built-in rule engine checks PAN format, Indian phone numbers, date formats, and address completeness before you export."),
+        (f3, "🔒", "Secure & Private", "bcrypt-encrypted auth, per-user extraction history, and SQLite-backed sessions. Your documents stay yours."),
+    ]
+    for col, icon, title, desc in features:
+        with col:
+            st.markdown(f'<div class="feature-card"><div class="icon">{icon}</div><h3>{title}</h3><p>{desc}</p></div>', unsafe_allow_html=True)
+
+    f4, f5, f6 = st.columns(3)
+    features2 = [
+        (f4, "📄", "PDF & TXT Support", "Upload text-based PDFs or plain text KYC forms. pdfplumber handles multi-page extraction automatically."),
+        (f5, "📊", "Live Dashboard", "Track every extraction — filename, validation score, AI mode, and timestamp — all in one dashboard."),
+        (f6, "⬇️", "Instant JSON Export", "One-click download of validated JSON ready for APIs, databases, or downstream compliance systems."),
+    ]
+    for col, icon, title, desc in features2:
+        with col:
+            st.markdown(f'<div class="feature-card"><div class="icon">{icon}</div><h3>{title}</h3><p>{desc}</p></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown('<p class="section-title">How It Works</p><p class="section-sub">Three steps from document to validated data</p>', unsafe_allow_html=True)
+
+    s1, s2, s3 = st.columns(3)
+    steps = [
+        (s1, "1", "Upload Document", "Drop a KYC PDF or TXT file, or try the built-in sample — no setup needed."),
+        (s2, "2", "AI Extracts Fields", "Gemini AI (or demo parser) pulls out name, DOB, PAN, Aadhaar, address, and phone into JSON."),
+        (s3, "3", "Validate & Export", "Every field is checked against compliance rules. Download clean JSON or review the full report."),
+    ]
+    for col, num, title, desc in steps:
+        with col:
+            st.markdown(f'<div class="how-step"><div class="step-num">{num}</div><h4>{title}</h4><p>{desc}</p></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown(
+        """
+        <p class="section-title">Built With Modern Tech</p>
+        <p class="section-sub">Full-stack Python platform — AI, auth, validation, and UI in one repo</p>
+        <div class="tech-grid">
+            <span class="tech-chip">Python</span>
+            <span class="tech-chip">Streamlit</span>
+            <span class="tech-chip">Google Gemini 2.0</span>
+            <span class="tech-chip">pdfplumber</span>
+            <span class="tech-chip">SQLite</span>
+            <span class="tech-chip">bcrypt</span>
+            <span class="tech-chip">Custom CSS</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="cta-box">
+            <h2>Ready to automate your KYC pipeline?</h2>
+            <p>Sign in with the demo account or create your own — start extracting in under 30 seconds.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    b1, b2, b3 = st.columns([1, 1.2, 1])
+    with b2:
+        if st.button("Launch DocStruct →", type="primary", use_container_width=True, key="cta_launch"):
+            st.session_state.show_auth = True
+            st.rerun()
+
+    st.markdown('<div class="landing-footer">DocStruct · AI Document Intelligence · Built for enterprise KYC automation</div>', unsafe_allow_html=True)
+
+
 def show_login_page() -> None:
+    if st.button("← Back to Home"):
+        st.session_state.show_auth = False
+        st.rerun()
+
     st.markdown(
         """
         <div class="auth-logo">📄</div>
-        <div class="auth-title">DocStruct</div>
-        <div class="auth-subtitle">AI-Powered KYC Document Intelligence</div>
+        <div class="auth-title">Welcome to DocStruct</div>
+        <div class="auth-subtitle">Sign in to start extracting KYC data</div>
         """,
         unsafe_allow_html=True,
     )
@@ -422,7 +543,10 @@ def render_about_page() -> None:
 
 # ----- Main routing -----
 if not st.session_state.authenticated:
-    show_login_page()
+    if st.session_state.show_auth:
+        show_login_page()
+    else:
+        show_landing_page()
 else:
     render_sidebar()
 
